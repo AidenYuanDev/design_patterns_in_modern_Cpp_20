@@ -96,7 +96,7 @@ int main(){
 
 ## 1、UML类图
 
-![组合模式](.\图片(image)\组合模式.png)
+![组合模式](图片(image)/组合模式.png)
 ## 2、实现
 ~~~c
 #include <cstdlib>
