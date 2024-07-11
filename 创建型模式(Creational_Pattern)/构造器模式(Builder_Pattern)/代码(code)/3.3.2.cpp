@@ -1,4 +1,3 @@
-#include <algorithm>
 #include <iostream>
 #include <list>
 #include <vector>
@@ -44,7 +43,6 @@ private:
 
 public:
     static Vehicle_Builder create();
-    Vehicle(){}
 
     // 打印车辆信息的方法
     void printVehicleInfo() const {
@@ -90,151 +88,150 @@ public:
 
 class Vehicle_Builder_Base {
 protected:
-    Vehicle& vehicle;
-    explicit Vehicle_Builder_Base(Vehicle& vehicle) : vehicle(vehicle) {}
+    unique_ptr<Vehicle> vehicle;
+    explicit Vehicle_Builder_Base(unique_ptr<Vehicle>& vehicle) : vehicle(std::move(vehicle)) {}
 
 public:
-    operator Vehicle() { return std::move(vehicle); }
-    V_Basic_Properties_Builder basic_properties() const;
-    V_Dynamic_Properties_Builder dynamic_properties() const;
-    V_Size_And_Weight_Builder size_and_weight() const;
-    V_Vehicle_Features_Builder vehicle_features() const;
-    V_Owner_Information_Builder owner_information() const;
+    operator Vehicle() { return std::move(*vehicle); }
+    V_Basic_Properties_Builder basic_properties();
+    V_Dynamic_Properties_Builder dynamic_properties();
+    V_Size_And_Weight_Builder size_and_weight();
+    V_Vehicle_Features_Builder vehicle_features();
+    V_Owner_Information_Builder owner_information();
 };
 
 class Vehicle_Builder : public Vehicle_Builder_Base {
-protected:
-    Vehicle vehicle;
 public:
-    Vehicle_Builder() : Vehicle_Builder_Base(vehicle) {}
+    Vehicle_Builder(unique_ptr<Vehicle>& vehicle) : Vehicle_Builder_Base(vehicle) {}
 };
 
 class V_Basic_Properties_Builder : public Vehicle_Builder_Base {
 public:
-    explicit V_Basic_Properties_Builder(Vehicle& vehicle) : Vehicle_Builder_Base(vehicle) {}
+    explicit V_Basic_Properties_Builder(unique_ptr<Vehicle>& vehicle) : Vehicle_Builder_Base(vehicle) {}
 
     V_Basic_Properties_Builder& make(const std::string& make) {
-        vehicle.make = make;
+        vehicle->make = make;
         return *this;
     }
 
     V_Basic_Properties_Builder& model(const std::string& model) {
-        vehicle.model = model;
+        vehicle->model = model;
         return *this;
     }
 
     V_Basic_Properties_Builder& year(int year) {
-        vehicle.year = year;
+        vehicle->year = year;
         return *this;
     }
 
     V_Basic_Properties_Builder& price(double price) {
-        vehicle.price = price;
+        vehicle->price = price;
         return *this;
     }
 };
 
 class V_Dynamic_Properties_Builder : public Vehicle_Builder_Base {
 public:
-    explicit V_Dynamic_Properties_Builder(Vehicle& vehicle) : Vehicle_Builder_Base(vehicle) {}
+    explicit V_Dynamic_Properties_Builder(unique_ptr<Vehicle>& vehicle) : Vehicle_Builder_Base(vehicle) {}
 
     V_Dynamic_Properties_Builder& engineSize(double engineSize) {
-        vehicle.engineSize = engineSize;
+        vehicle->engineSize = engineSize;
         return *this;
     }
 
     V_Dynamic_Properties_Builder& horsepower(int horsepower) {
-        vehicle.horsepower = horsepower;
+        vehicle->horsepower = horsepower;
         return *this;
     }
 
     V_Dynamic_Properties_Builder& fuelType(const std::string& fuelType) {
-        vehicle.fuelType = fuelType;
+        vehicle->fuelType = fuelType;
         return *this;
     }
 };
 
 class V_Size_And_Weight_Builder : public Vehicle_Builder_Base {
 public:
-    explicit V_Size_And_Weight_Builder(Vehicle& vehicle) : Vehicle_Builder_Base(vehicle) {}
+    explicit V_Size_And_Weight_Builder(unique_ptr<Vehicle>& vehicle) : Vehicle_Builder_Base(vehicle) {}
 
     V_Size_And_Weight_Builder& length(double length) {
-        vehicle.length = length;
+        vehicle->length = length;
         return *this;
     }
 
     V_Size_And_Weight_Builder& width(double width) {
-        vehicle.width = width;
+        vehicle->width = width;
         return *this;
     }
 
     V_Size_And_Weight_Builder& height(double height) {
-        vehicle.height = height;
+        vehicle->height = height;
         return *this;
     }
 
     V_Size_And_Weight_Builder& curbWeight(double curbWeight) {
-        vehicle.curbWeight = curbWeight;
+        vehicle->curbWeight = curbWeight;
         return *this;
     }
 };
 
 class V_Vehicle_Features_Builder : public Vehicle_Builder_Base {
 public:
-    explicit V_Vehicle_Features_Builder(Vehicle& vehicle) : Vehicle_Builder_Base(vehicle) {}
+    explicit V_Vehicle_Features_Builder(unique_ptr<Vehicle>& vehicle) : Vehicle_Builder_Base(vehicle) {}
 
     V_Vehicle_Features_Builder& addFeature(const std::string& feature) {
-        vehicle.features.push_back(feature);
+        vehicle->features.push_back(feature);
         return *this;
     }
 
     V_Vehicle_Features_Builder& addSpecification(const std::string& key, const std::string& value) {
-        vehicle.specifications[key] = value;
+        vehicle->specifications[key] = value;
         return *this;
     }
 
     V_Vehicle_Features_Builder& addSafetyFeature(const std::string& safetyFeature) {
-        vehicle.safetyFeatures.insert(safetyFeature);
+        vehicle->safetyFeatures.insert(safetyFeature);
         return *this;
     }
 };
 
 class V_Owner_Information_Builder : public Vehicle_Builder_Base {
 public:
-    explicit V_Owner_Information_Builder(Vehicle& vehicle) : Vehicle_Builder_Base(vehicle) {}
+    explicit V_Owner_Information_Builder(unique_ptr<Vehicle>& vehicle) : Vehicle_Builder_Base(vehicle) {}
 
     V_Owner_Information_Builder& addPreviousOwner(const std::string& owner) {
-        vehicle.previousOwners.push_back(owner);
+        vehicle->previousOwners.push_back(owner);
         return *this;
     }
 
     V_Owner_Information_Builder& addOwnerDetail(const std::string& key, const std::string& value) {
-        vehicle.ownerDetails[key] = value;
+        vehicle->ownerDetails[key] = value;
         return *this;
     }
 };
 
 Vehicle_Builder Vehicle::create() {
-    return Vehicle_Builder();
+    auto vehicle = make_unique<Vehicle>();
+    return Vehicle_Builder(vehicle);
 }
 
-V_Basic_Properties_Builder Vehicle_Builder_Base::basic_properties() const {
+V_Basic_Properties_Builder Vehicle_Builder_Base::basic_properties() {
     return V_Basic_Properties_Builder(vehicle);
 }
 
-V_Dynamic_Properties_Builder Vehicle_Builder_Base::dynamic_properties() const {
+V_Dynamic_Properties_Builder Vehicle_Builder_Base::dynamic_properties() {
     return V_Dynamic_Properties_Builder(vehicle);
 }
 
-V_Size_And_Weight_Builder Vehicle_Builder_Base::size_and_weight() const {
+V_Size_And_Weight_Builder Vehicle_Builder_Base::size_and_weight() {
     return V_Size_And_Weight_Builder(vehicle);
 }
 
-V_Vehicle_Features_Builder Vehicle_Builder_Base::vehicle_features() const {
+V_Vehicle_Features_Builder Vehicle_Builder_Base::vehicle_features() {
     return V_Vehicle_Features_Builder(vehicle);
 }
 
-V_Owner_Information_Builder Vehicle_Builder_Base::owner_information() const {
+V_Owner_Information_Builder Vehicle_Builder_Base::owner_information(){
     return V_Owner_Information_Builder(vehicle);
 }
 
