@@ -10,6 +10,8 @@
 
 ## 一、UML类图
 
+![状态模式](.\图片(image)\状态模式.png)
+
 ## 二、实现
 ~~~c
 #include <iostream>
